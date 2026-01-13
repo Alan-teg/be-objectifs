@@ -141,3 +141,176 @@
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #2563eb 0%, #ea580c 100%);
 }
+
+/* ============================================
+   MODE SOMBRE - Styles globaux
+   ============================================ */
+
+.dark {
+  background-color: #030712;
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #030712;
+  color: #f3f4f6;
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #f3f4f6;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Composants de base en mode sombre */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  border-color: #374151;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6b7280;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Scrollbar en mode sombre */
+.dark ::-webkit-scrollbar-track {
+  background-color: #111827;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6 0%, #f97316 100%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2563eb 0%, #ea580c 100%);
+}
+
+/* Arrière-plans en mode sombre */
+.dark .bg-white {
+  background-color: #1f2937;
+}
+
+.dark .bg-gray-50 {
+  background-color: #111827;
+}
+
+.dark .bg-gray-100 {
+  background-color: #1f2937;
+}
+
+.dark .bg-gray-200 {
+  background-color: #2d3748;
+}
+
+/* Bordures en mode sombre */
+.dark .border-gray-200,
+.dark .border-blue-100,
+.dark .border-gray-300 {
+  border-color: #374151;
+}
+
+.dark .border-gray-100 {
+  border-color: #2d3748;
+}
+
+.dark .border-blue-200 {
+  border-color: #2d3748;
+}
+
+/* Texte en mode sombre */
+.dark .text-gray-600,
+.dark .text-gray-700 {
+  color: #9ca3af;
+}
+
+.dark .text-gray-500 {
+  color: #6b7280;
+}
+
+.dark .text-gray-400 {
+  color: #6b7280;
+}
+
+.dark .text-gray-900 {
+  color: #f3f4f6;
+}
+
+/* Ombres en mode sombre */
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+/* Badges et statuts */
+.dark .bg-blue-100 {
+  background-color: #1f2937;
+  color: #60a5fa;
+}
+
+.dark .bg-green-100 {
+  background-color: #1f2937;
+  color: #4ade80;
+}
+
+.dark .bg-orange-100 {
+  background-color: #1f2937;
+  color: #fb923c;
+}
+
+.dark .bg-red-100 {
+  background-color: #1f2937;
+  color: #f87171;
+}
+
+.dark .bg-yellow-100 {
+  background-color: #1f2937;
+  color: #fbbf24;
+}
+
+.dark .text-blue-800 {
+  color: #60a5fa;
+}
+
+.dark .text-green-800 {
+  color: #4ade80;
+}
+
+.dark .text-orange-800 {
+  color: #fb923c;
+}
+
+.dark .text-red-800 {
+  color: #f87171;
+}
+
+.dark .text-yellow-800 {
+  color: #fbbf24;
+}
+
+/* Liens en mode sombre */
+.dark a {
+  color: #60a5fa;
+}
+
+.dark a:hover {
+  color: #93c5fd;
+}
+
+/* Animations en mode sombre */
+.dark .animate-pulse {
+  opacity: 0.6;
+}

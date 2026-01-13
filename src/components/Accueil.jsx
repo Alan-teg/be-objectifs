@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles, RefreshCw } from 'lucide-react';
 import MonthManager from '../utils/MonthManager';
-import { Button } from './ui/Card';
+import { Button, ConfirmationModal } from './ui/Card';
 import hero from '../assets/hero.png';
 
 const Accueil = () => {
   const navigate = useNavigate();
   const [isMonthClosed, setIsMonthClosed] = useState(false);
   const [monthName, setMonthName] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   useEffect(() => {
     try {
@@ -22,10 +23,12 @@ const Accueil = () => {
   }, []);
 
   const handleResetApp = () => {
-    if (window.confirm('Êtes-vous sûr de vouloir tout réinitialiser ? Cette action est irréversible et supprimera toutes vos données.')) {
-      localStorage.clear();
-      window.location.reload();
-    }
+    setShowResetConfirm(true);
+  };
+
+  const executeReset = () => {
+    localStorage.clear();
+    window.location.reload();
   };
 
   return (
@@ -111,6 +114,18 @@ const Accueil = () => {
             Attention : cette action supprimera toutes vos données.
           </p>
         </div>
+
+        {/* Modale de confirmation pour réinitialisation */}
+        <ConfirmationModal
+          isOpen={showResetConfirm}
+          title="Réinitialiser l'application"
+          message="Êtes-vous sûr de vouloir tout réinitialiser ? Cette action est irréversible et supprimera toutes vos données, y compris les objectifs, l'historique et les configurations."
+          confirmText="Réinitialiser"
+          cancelText="Annuler"
+          isDangerous={true}
+          onConfirm={executeReset}
+          onCancel={() => setShowResetConfirm(false)}
+        />
       </div>
     </div>
   );

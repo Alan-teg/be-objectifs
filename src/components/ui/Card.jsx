@@ -189,6 +189,63 @@ const Select = ({ label, value, onChange, options, required = false }) => (
   </div>
 );
 
+// Composant Modal de confirmation - Réutilisable pour toutes les confirmations
+const ConfirmationModal = ({ 
+  isOpen = false, 
+  title = 'Confirmation', 
+  message = '', 
+  onConfirm = () => {}, 
+  onCancel = () => {}, 
+  confirmText = 'Confirmer', 
+  cancelText = 'Annuler',
+  isDangerous = false 
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Overlay semi-transparent */}
+      <div 
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onCancel}
+      />
+      
+      {/* Contenu de la modale */}
+      <div className="relative bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 animate-fadeIn">
+        <div className="p-6">
+          {/* Titre */}
+          <h2 className="text-xl font-bold text-gray-900 mb-3">
+            {title}
+          </h2>
+          
+          {/* Message */}
+          <p className="text-gray-600 text-sm leading-relaxed mb-6">
+            {message}
+          </p>
+          
+          {/* Boutons d'action */}
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={onCancel}
+            >
+              {cancelText}
+            </Button>
+            <Button
+              variant={isDangerous ? 'danger' : 'primary'}
+              size="md"
+              onClick={onConfirm}
+            >
+              {confirmText}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Exportation de tous les composants
 export {
   Card as default,
@@ -200,5 +257,6 @@ export {
   Badge,
   Button,
   Input,
-  Select
+  Select,
+  ConfirmationModal
 };

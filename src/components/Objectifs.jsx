@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, CheckCircle, Target, User, Calendar, TrendingUp } from 'lucide-react';
+import { Plus, Edit, Trash2, X, CheckCircle, Target, User, Calendar, TrendingUp, Star } from 'lucide-react';
 import MonthManager from '../utils/MonthManager';
 import StorageManager from './StorageManage.jsx';
 import MonthSelector from './MonthSelector';
@@ -10,7 +10,8 @@ import Card, {
   Button, 
   Badge,
   Input,
-  Select
+  Select,
+  ConfirmationModal
 } from './ui/Card';
 
 // Composant Badge pour afficher l'état
@@ -37,6 +38,11 @@ const ObjectifsPage = () => {
   const [editingId, setEditingId] = useState(null);
   const [filterType, setFilterType] = useState('all');
   const [evaluatingId, setEvaluatingId] = useState(null);
+  const [importantIds, setImportantIds] = useState([]);
+  
+  // État pour les modales de confirmation
+  const [pendingConfirmation, setPendingConfirmation] = useState(null);
+  
   const [formData, setFormData] = useState({
     name: '',
     text: '',
@@ -48,6 +54,32 @@ const ObjectifsPage = () => {
   const [evaluationData, setEvaluationData] = useState({
     evaluatedValue: ''
   });
+  
+  // Charger les objectifs marqués comme importants depuis localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('importantObjectiveIds');
+    if (saved) {
+      try {
+        setImportantIds(JSON.parse(saved));
+      } catch (e) {
+        setImportantIds([]);
+      }
+    }
+  }, []);
+
+  // Sauvegarder les IDs importants dans localStorage
+  const saveImportantIds = (ids) => {
+    setImportantIds(ids);
+    localStorage.setItem('importantObjectiveIds', JSON.stringify(ids));
+  };
+
+  // Basculer le statut "important" d'un objectif
+  const toggleImportant = (objectiveId) => {
+    const newIds = importantIds.includes(objectiveId)
+      ? importantIds.filter(id => id !== objectiveId)
+      : [...importantIds, objectiveId];
+    saveImportantIds(newIds);
+  };
   
   useEffect(() => {
     loadAllObjectives();
@@ -105,11 +137,22 @@ const ObjectifsPage = () => {
   };
   
   const handleDelete = (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?')) {
-      const updated = allObjectives.filter(obj => obj.id !== id);
-      StorageManager.saveObjectives(updated, activeMonth);
-      loadAllObjectives();
-    }
+    // Afficher la modale de confirmation au lieu du window.confirm
+    setPendingConfirmation({
+      type: 'delete',
+      objectiveId: id,
+      title: 'Supprimer l\'objectif',
+      message: 'Êtes-vous sûr de vouloir supprimer cet objectif ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      isDangerous: true
+    });
+  };
+
+  // Exécuter l'action de suppression (logique inchangée)
+  const executeDelete = (id) => {
+    const updated = allObjectives.filter(obj => obj.id !== id);
+    StorageManager.saveObjectives(updated, activeMonth);
+    loadAllObjectives();
   };
   
   const handleEvaluate = (obj) => {
@@ -125,6 +168,25 @@ const ObjectifsPage = () => {
       return;
     }
 
+    const value = parseFloat(evaluatedValue);
+    const obj = allObjectives.find(o => o.id === objectiveId);
+    const percentage = Math.round((value / obj.targetValue) * 100);
+    const isSuccess = percentage >= 60;
+
+    // Afficher la modale de confirmation pour la validation
+    setPendingConfirmation({
+      type: 'validate',
+      objectiveId: objectiveId,
+      title: 'Confirmer la validation',
+      message: `Validation de "${obj.text}" avec ${value}/${obj.targetValue} (${percentage}%) - ${isSuccess ? '✅ Objectif atteint' : '❌ Objectif non atteint'}`,
+      confirmText: 'Valider',
+      isDangerous: false
+    });
+  };
+
+  // Exécuter la validation (logique métier inchangée)
+  const executeValidation = (objectiveId) => {
+    const evaluatedValue = evaluationData.evaluatedValue;
     const value = parseFloat(evaluatedValue);
     const obj = allObjectives.find(o => o.id === objectiveId);
     const percentage = Math.round((value / obj.targetValue) * 100);
@@ -153,6 +215,23 @@ const ObjectifsPage = () => {
   const handleCancelEvaluation = () => {
     setEvaluatingId(null);
     setEvaluationData({ evaluatedValue: '' });
+  };
+
+  // Fonction pour gérer les confirmations (dispatcher)
+  const handleConfirmation = () => {
+    if (!pendingConfirmation) return;
+
+    if (pendingConfirmation.type === 'delete') {
+      executeDelete(pendingConfirmation.objectiveId);
+    } else if (pendingConfirmation.type === 'validate') {
+      executeValidation(pendingConfirmation.objectiveId);
+    }
+
+    setPendingConfirmation(null);
+  };
+
+  const handleCancelConfirmation = () => {
+    setPendingConfirmation(null);
   };
   
   const userTypes = [
@@ -397,12 +476,27 @@ const ObjectifsPage = () => {
         {/* Liste des objectifs */}
         {filteredObjectives.length > 0 ? (
           <div className="space-y-4">
-            {filteredObjectives.map((objective) => (
-              <Card key={objective.id} className="hover:shadow-lg transition-all duration-300">
+            {filteredObjectives.map((objective) => {
+              const isImportant = importantIds.includes(objective.id);
+              return (
+              <Card 
+                key={objective.id} 
+                className={`hover:shadow-lg transition-all duration-300 ${
+                  isImportant 
+                    ? 'border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-50/30 to-white shadow-md' 
+                    : ''
+                }`}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-3">
+                        {isImportant && (
+                          <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-100 rounded-full">
+                            <Star className="h-3.5 w-3.5 text-yellow-600 fill-yellow-600" />
+                            <span className="text-xs font-semibold text-yellow-700">Important</span>
+                          </div>
+                        )}
                         <StatusBadge status={objective.status} />
                         <Badge variant="primary">{objective.type === 'studio' ? 'Studio' : objective.type === 'developer' ? 'Développeur' : 'Chef'}</Badge>
                       </div>
@@ -435,6 +529,20 @@ const ObjectifsPage = () => {
                     </div>
                     {!isMonthClosed && objective.status === 'pending' && (
                       <div className="flex items-center space-x-2 ml-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleImportant(objective.id)}
+                          title={isImportant ? "Retirer de l'important" : "Marquer comme important"}
+                        >
+                          <Star 
+                            className={`h-5 w-5 transition-all ${
+                              isImportant 
+                                ? 'text-yellow-500 fill-yellow-500' 
+                                : 'text-gray-400'
+                            }`} 
+                          />
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -503,7 +611,8 @@ const ObjectifsPage = () => {
                   )}
                 </CardContent>
               </Card>
-            ))}
+            );
+            })}
           </div>
         ) : (
           <Card>
@@ -530,6 +639,18 @@ const ObjectifsPage = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Modale de confirmation pour actions sensibles */}
+        <ConfirmationModal
+          isOpen={!!pendingConfirmation}
+          title={pendingConfirmation?.title}
+          message={pendingConfirmation?.message}
+          confirmText={pendingConfirmation?.confirmText}
+          cancelText="Annuler"
+          isDangerous={pendingConfirmation?.isDangerous}
+          onConfirm={handleConfirmation}
+          onCancel={handleCancelConfirmation}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Target, BarChart3, History } from 'lucide-react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Target, BarChart3, History, Moon, Sun, LogOut } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { Button } from './ui/Card';
 import logo from '../assets/logo.png';
 
 const navItems = [
@@ -12,12 +15,24 @@ const navItems = [
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isDark, toggleTheme } = useTheme();
+  const { logout, user } = useAuth();
 
   // Vérifie si l'onglet est actif
   const isActive = (path) => location.pathname === path;
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-blue-100 shadow-sm">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+      isDark 
+        ? 'bg-gray-900/95 border-b border-gray-800' 
+        : 'bg-white/95 border-b border-blue-100'
+    } backdrop-blur-md shadow-sm`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo et nom de l'application avec effet hover */}
@@ -30,7 +45,7 @@ const Navbar = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-orange-500 opacity-0 group-hover:opacity-20 rounded-lg blur-sm transition-opacity duration-300"></div>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent hidden sm:block transition-all duration-300 group-hover:scale-105">
+            <span className={`text-xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent hidden sm:block transition-all duration-300 group-hover:scale-105 ${isDark ? 'opacity-90' : ''}`}>
               Be-Objectifs
             </span>
           </div>
@@ -45,8 +60,12 @@ const Navbar = () => {
                   to={item.path}
                   className={`group flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 relative overflow-hidden ${
                     active
-                      ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm'
-                      : 'text-gray-600 hover:text-blue-700 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-orange-50/30'
+                      ? isDark 
+                        ? 'bg-gray-800 text-blue-400 shadow-sm' 
+                        : 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm'
+                      : isDark
+                        ? 'text-gray-400 hover:text-blue-400 hover:bg-gray-800/50'
+                        : 'text-gray-600 hover:text-blue-700 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-orange-50/30'
                   }`}
                 >
                   {/* Effet de brillance au survol */}
@@ -54,8 +73,10 @@ const Navbar = () => {
                   
                   <item.icon className={`mr-2 h-5 w-5 transition-all duration-300 relative z-10 ${
                     active 
-                      ? 'text-blue-600 scale-110' 
-                      : 'text-gray-500 group-hover:text-blue-600 group-hover:scale-110 group-hover:rotate-12'
+                      ? isDark ? 'text-blue-400 scale-110' : 'text-blue-600 scale-110'
+                      : isDark 
+                        ? 'text-gray-500 group-hover:text-blue-400 group-hover:scale-110 group-hover:rotate-12'
+                        : 'text-gray-500 group-hover:text-blue-600 group-hover:scale-110 group-hover:rotate-12'
                   }`} />
                   <span className="relative z-10">{item.label}</span>
                   
@@ -68,9 +89,37 @@ const Navbar = () => {
             })}
           </div>
 
-          {/* Mobile menu button avec effets améliorés */}
-          <div className="flex items-center md:hidden">
-            <div className="flex items-center space-x-1">
+          {/* Bouton de toggle du thème et Mobile menu button */}
+          <div className="flex items-center space-x-3">
+            {/* Bouton toggle thème */}
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-lg transition-all duration-300 ${
+                isDark
+                  ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title={isDark ? 'Mode clair' : 'Mode sombre'}
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+
+            {/* Bouton déconnexion (desktop) */}
+            <button
+              onClick={handleLogout}
+              className={`hidden md:flex items-center px-3 py-2 rounded-lg transition-all duration-300 text-sm font-medium ${
+                isDark
+                  ? 'bg-red-900/20 text-red-400 hover:bg-red-900/30'
+                  : 'bg-red-50 text-red-700 hover:bg-red-100'
+              }`}
+              title={`Déconnexion (${user?.username})`}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              <span className="hidden lg:inline">Déconnexion</span>
+            </button>
+
+            {/* Mobile menu buttons */}
+            <div className="flex items-center md:hidden space-x-1">
               {navItems.map((item) => {
                 const active = isActive(item.path);
                 return (
@@ -79,13 +128,19 @@ const Navbar = () => {
                     to={item.path}
                     className={`p-2 rounded-lg transition-all duration-300 relative ${
                       active
-                        ? 'bg-gradient-to-br from-blue-50 to-orange-50 text-blue-700 shadow-sm'
-                        : 'text-gray-600 hover:text-blue-700 hover:bg-blue-50/50'
+                        ? isDark
+                          ? 'bg-gray-800 text-blue-400 shadow-sm'
+                          : 'bg-gradient-to-br from-blue-50 to-orange-50 text-blue-700 shadow-sm'
+                        : isDark
+                          ? 'text-gray-400 hover:text-blue-400 hover:bg-gray-800/50'
+                          : 'text-gray-600 hover:text-blue-700 hover:bg-blue-50/50'
                     }`}
                     title={item.label}
                   >
                     <item.icon className={`h-5 w-5 transition-all duration-300 ${
-                      active ? 'text-blue-600 scale-110' : 'text-gray-500'
+                      active 
+                        ? isDark ? 'text-blue-400 scale-110' : 'text-blue-600 scale-110'
+                        : isDark ? 'text-gray-500' : 'text-gray-500'
                     }`} />
                     {active && (
                       <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-blue-600 to-orange-500 rounded-full"></span>
@@ -93,6 +148,19 @@ const Navbar = () => {
                   </NavLink>
                 );
               })}
+              
+              {/* Bouton déconnexion (mobile) */}
+              <button
+                onClick={handleLogout}
+                className={`p-2 rounded-lg transition-all duration-300 ${
+                  isDark
+                    ? 'bg-red-900/20 text-red-400 hover:bg-red-900/30'
+                    : 'bg-red-50 text-red-700 hover:bg-red-100'
+                }`}
+                title="Déconnexion"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
             </div>
           </div>
         </div>
